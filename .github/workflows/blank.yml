@@ -134,7 +134,7 @@ jobs:
 
             # Authenticate to org using the URL stored in the text file
             - name: 'Authenticate to Integration Org'
-              run: sfdx auth:jwt:grant --clientid PlatformCLI --jwtkeyfile server.key --username goyal@shreya.com --setdefaultdevhubusername --setalias my-hub-org
+              run: sfdx auth:jwt:grant -i 3MVG9G9pzCUSkzZsTnQwS52lzRR8eRynrzzla9JXgfN7PJXIOkW3SRPqKTvlJqxnKCj7uvoekFxSpCrNFEK_E -f server.key --username goyal@shreya.com -d -a my-hub-org
 
             # We use SFDX Git Delta to create a directory with only the metadata that has changed.
             # this allows us to deploy only those changes, as opposed to deploying the entire branch. 
