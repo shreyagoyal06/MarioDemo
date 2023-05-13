@@ -177,7 +177,11 @@ jobs:
               if: ${{ env.APEX_TESTS == 'all' }}
               run: |
                   sfdx force:source:deploy -u goyal@shreya.com -p "changed-sources/force-app" --checkonly --testlevel NoTestRun  --json
-
-            - name: 'Deploy destructive changes (if any)'
-              run: |
-               sfdx force:mdapi:deploy -u goyal@shreya.com -d "changed-sources/destructiveChanges" --checkonly --ignorewarnings 
+    Deploy-to-org:
+        needs: validate-deployment-on-develop-org
+        runs-on: ubuntu-latest
+        steps:
+           - name: 'Deploy to org'
+             run: |
+              sfdx force:source:deploy -p force-app --testlevel NoTestRun --json
+        
