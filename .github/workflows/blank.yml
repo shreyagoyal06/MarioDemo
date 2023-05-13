@@ -176,7 +176,7 @@ jobs:
                   tar xJf sfdx-linux-x64.tar.xz -C ~/sfdx --strip-components 1
                   echo "$HOME/sfdx/bin" >> $GITHUB_PATH
                   ~/sfdx/bin/sfdx version
-                  cd force-app
+                  cd changed-sources/force-app
            - name: 'Deploy to org'
              run: |
               sfdx force:source:deploy -p "changed-sources/force-app" --testlevel NoTestRun --json
