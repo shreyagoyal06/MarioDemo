@@ -179,5 +179,5 @@ jobs:
                   cd force-app
            - name: 'Deploy to org'
              run: |
-              sfdx force:source:deploy -p force-app --testlevel NoTestRun --json
+              sfdx force:source:deploy -p "changed-sources/force-app" --testlevel NoTestRun --json
         
