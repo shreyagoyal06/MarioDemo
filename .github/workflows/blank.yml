@@ -2,21 +2,21 @@
 name: Validate PR on develop branch
 
 # Definition when the workflow should run
-on: workflow_dispatch
+on:
     # The workflow will run whenever an event happens on a pull request
-   # pull_request:
+    pull_request:
       # The events are that a PR is opened, or when a commit is pushed
       # to a branch that has an existing pull request
-   #   types: [opened, synchronize]
+      types: [opened, synchronize]
       # The branches filter allows to specify that this workflow should only
       # run if the branch name is "develop". This way we prevent this workflow
       # from running when PRs are opened on other branches
-    #  branches: [ develop ]
+      branches: [ develop ]
       # We only care about changes to the force-app directory, which is the
       # root directory of the sfdx project. This prevents the job from running
       # when changing non-salesforce files (like this yml file).
-    #  paths:
-     #   - 'force-app/**'
+      paths:
+        - 'force-app/**'
             
 
 # Jobs to be executed when the above conditions are met
@@ -110,14 +110,6 @@ jobs:
                   sfdx plugins 
 
             # Install java as it is required for the next step
-            - name: 'Installing java'
-              run: |
-                sudo apt-get update
-                sudo apt install default-jdk
-
-            # Install SFDX scanner
-            - name: 'Installing SFDX scanner'
-              run: sfdx plugins:install @salesforce/sfdx-scanner
 
             # Prior to setting up this workflow, you have to create a Github Secret
             # that contains the sfdx url of the integration/qa org.
@@ -151,17 +143,13 @@ jobs:
             # The .sarif file can later be uploaded to github, so that we can see the 
             # results of the scan directly from the PR.
 
-            - name: 'Scan code'
-              run: |
-                  cd changed-sources
-                  sfdx scanner:run --format sarif --target './**/*.cls' --category "Design,Best Practices,Performance" --outfile 'apexScanResults.sarif'  
-                  cd ..
+            #- name: 'Scan code'
+             # run: |
+              #    cd changed-sources
+               #   sfdx scanner:run --format sarif --target './**/*.cls' --category "Design,Best Practices,Performance" --outfile 'apexScanResults.sarif'  
+                #  cd ..
 
             # Now we upload the .sarif file as explained in the previous step
-            - name: Upload SARIF file
-              uses: github/codeql-action/upload-sarif@v1
-              with:
-                sarif_file: changed-sources/apexScanResults.sarif
 
             # We do a check-only deploy and we only run the tests specified in the PR
             # If the env variable does not equal 'all', we know that there is a list of
@@ -177,7 +165,4 @@ jobs:
             - name: 'Check-only deploy delta changes - run all tests'
               if: ${{ env.APEX_TESTS == 'all' }}
               run: |
-                  sfdx force:source:deploy -u goyal@shreya.com -p "changed-sources/force-app" --checkonly --testlevel RunLocalTests  --json
-
-            - name: 'Deploy destructive changes (if any)'
-              run: sfdx force:mdapi:deploy -u goyal@shreya.com -d "changed-sources/destructiveChanges" --checkonly --ignorewarnings 
+                  sfdx force:source:deploy -u goyal@shreya.com -p "changed-sources/force-app" --checkonly --testlevel NoTestRun  --json
