@@ -50,7 +50,7 @@ jobs:
             - name: 'Checkout source code'
               uses: actions/checkout@v3
               with:
-                ref: develop
+                ref: ${{github.head_}}
                 fetch-depth: 0
             
             # Now, we need a way to let the developer specify which tests to run, which
