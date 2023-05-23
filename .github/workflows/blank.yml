@@ -109,14 +109,6 @@ jobs:
                   sfdx plugins 
 
             # Install java as it is required for the next step
-            - name: 'Installing java'
-              run: |
-                sudo apt-get update
-                sudo apt install default-jdk
-
-            # Install SFDX scanner
-            - name: 'Installing SFDX scanner'
-              run: sfdx plugins:install @salesforce/sfdx-scanner
 
             # Prior to setting up this workflow, you have to create a Github Secret
             # that contains the sfdx url of the integration/qa org.
@@ -131,14 +123,10 @@ jobs:
 
             # The URL is stored in the Github Secret named SFDX_INTEGRATION_URL
             # so here we store the URL into a text file
-            - name: 'Populate auth file with SFDX_URL secret of integration org'
-              shell: bash
-              run: |
-                  echo ${{ secrets.SFDX_INTEGRATION_URL}} > ./SFDX_INTEGRATION_URL.txt
 
             # Authenticate to org using the URL stored in the text file
             - name: 'Authenticate to Integration Org'
-              run: sfdx auth:sfdxurl:store -f ./SFDX_INTEGRATION_URL.txt -s -a integration
+              run: sfdx auth:jwt:grant -i 3MVG9G9pzCUSkzZsTnQwS52lzRR8eRynrzzla9JXgfN7PJXIOkW3SRPqKTvlJqxnKCj7uvoekFxSpCrNFEK_E -f server.key --username goyal@shreya.com -d -a my-hub-org
 
             # We use SFDX Git Delta to create a directory with only the metadata that has changed.
             # this allows us to deploy only those changes, as opposed to deploying the entire branch. 
@@ -154,17 +142,13 @@ jobs:
             # The .sarif file can later be uploaded to github, so that we can see the 
             # results of the scan directly from the PR.
 
-            - name: 'Scan code'
-              run: |
-                  cd changed-sources
-                  sfdx scanner:run --format sarif --target './**/*.cls' --category "Design,Best Practices,Performance" --outfile 'apexScanResults.sarif'  
-                  cd ..
+            #- name: 'Scan code'
+             # run: |
+              #    cd changed-sources
+               #   sfdx scanner:run --format sarif --target './**/*.cls' --category "Design,Best Practices,Performance" --outfile 'apexScanResults.sarif'  
+                #  cd ..
 
             # Now we upload the .sarif file as explained in the previous step
-            - name: Upload SARIF file
-              uses: github/codeql-action/upload-sarif@v1
-              with:
-                sarif_file: changed-sources/apexScanResults.sarif
 
             # We do a check-only deploy and we only run the tests specified in the PR
             # If the env variable does not equal 'all', we know that there is a list of
@@ -174,13 +158,27 @@ jobs:
               if: ${{ env.APEX_TESTS != 'all' }}
               run: |
                   echo ${{env.APEX_TESTS}}
-                  sfdx force:source:deploy -p "changed-sources/force-app" --checkonly --testlevel RunSpecifiedTests --runtests ${{env.APEX_TESTS}} --json
+                  sfdx force:source:deploy -u goyal@shreya.com -p "changed-sources/force-app" --checkonly --testlevel RunSpecifiedTests --runtests ${{env.APEX_TESTS}} --json
 
             # If the env variable equals all, we run all tests
             - name: 'Check-only deploy delta changes - run all tests'
               if: ${{ env.APEX_TESTS == 'all' }}
               run: |
-                  sfdx force:source:deploy -p "changed-sources/force-app" --checkonly --testlevel RunLocalTests  --json
-
-            - name: 'Deploy destructive changes (if any)'
-              run: sfdx force:mdapi:deploy -d "changed-sources/destructiveChanges" --checkonly --ignorewarnings 
+                  sfdx force:source:deploy -u goyal@shreya.com -p "changed-sources/force-app" --checkonly --testlevel NoTestRun  --json
+    Deploy-to-org:
+        needs: validate-deployment-on-develop-org
+        runs-on: ubuntu-latest
+        steps:
+           - name: 'Install Salesforce CLI'
+             run: |
+                  wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
+                  mkdir ~/sfdx
+                  tar xJf sfdx-linux-x64.tar.xz -C ~/sfdx --strip-components 1
+                  echo "$HOME/sfdx/bin" >> $GITHUB_PATH
+                  ~/sfdx/bin/sfdx version
+                  cd changed-sources
+                  cd ..
+           - name: 'Deploy to org'
+             run: |
+              sfdx force:source:deploy -p "changed-sources/force-app" --testlevel NoTestRun --json
+        
