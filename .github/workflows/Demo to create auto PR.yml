@@ -16,7 +16,7 @@ jobs:
        uses: peter-evans/create-pull-request@v3
        with:
         branch: feature/testforPR
-        base: master
+        base: main
         title: "demo for auto PR"
         body:
          This is to show auto PR creation.
