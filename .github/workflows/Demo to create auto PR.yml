@@ -1,0 +1,23 @@
+name: Demo to create auto PR
+
+on:
+  push:
+   branches:
+     - develop
+
+jobs:
+ updateAuthor:
+   runs-on: ubuntu-latest
+   steps:
+     - name: checking out code
+       uses: actions/checkout@v3
+
+     - name: Raise PR
+       uses: peter-evans/create-pull-request@v3
+       with:
+        branch: feature/testforPR
+        base: master
+        title: "demo for auto PR"
+        body:
+         This is to show auto PR creation.
+
