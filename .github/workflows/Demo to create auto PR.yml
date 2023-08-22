@@ -14,8 +14,8 @@ jobs:
      - name: Send email
        uses: dawidd6/action-send-mail@v3.8.0
        with:
+        server_address: smtp.gmail.com
         subject: Hello
-      # Recipients mail addresses (separated with comma)
         to: shreyagoyal787@gmail.com 
       # Full name of mail sender (might be with an email address specified in <>)
         from: ShreyaGoyal
