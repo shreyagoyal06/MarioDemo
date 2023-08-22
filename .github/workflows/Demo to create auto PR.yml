@@ -14,7 +14,7 @@ jobs:
      - name: Send email
        uses: dawidd6/action-send-mail@v3.8.0
        with:
-        server_address: smtp.gmail.com
+        server_address: smtp.office365.com
         username: shreyagoyal787@gmail.com
         password: wcmllabxiiliyqdb
         subject: Hello
